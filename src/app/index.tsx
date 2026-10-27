@@ -39,6 +39,9 @@ const categories: Category[] = [
 export default function HomeScreen() {
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortOrder, setSortOrder] = useState<
+  'newest' | 'name' | 'price'
+>('newest');
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -96,6 +99,22 @@ export default function HomeScreen() {
     product.category.toLowerCase().includes(query)
   );
 });
+
+
+const sortedProducts = [...filteredProducts].sort((a, b) => {
+  switch (sortOrder) {
+    case 'name':
+      return a.name.localeCompare(b.name);
+
+    case 'price':
+      return b.price - a.price;
+
+    case 'newest':
+    default:
+      return b.id - a.id;
+  }
+});
+
 
   async function addProduct() {
     const parsedPrice = Number(price);
@@ -237,6 +256,41 @@ export default function HomeScreen() {
             Beauty, skincare, haircare and supplements
           </Text>
         </View>
+
+<View style={{ minWidth: 115 }}>
+  <Text style={{ fontSize: 11, color: '#897C75', marginBottom: 5 }}>
+    SORT BY
+  </Text>
+  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
+    {([
+      ['newest', 'Newest'],
+      ['name', 'Name A–Z'],
+      ['price', 'Price ↓'],
+    ] as const).map(([value, label]) => (
+      <TouchableOpacity
+        key={value}
+        onPress={() => setSortOrder(value)}
+        style={{
+          paddingHorizontal: 8,
+          paddingVertical: 7,
+          borderRadius: 8,
+          backgroundColor: sortOrder === value ? '#49372F' : '#EFE6DF',
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 10,
+            fontWeight: '600',
+            color: sortOrder === value ? '#FFFFFF' : '#49372F',
+          }}
+        >
+          {label}
+        </Text>
+      </TouchableOpacity>
+    ))}
+  </View>
+</View>
+
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => setShowForm((visible) => !visible)}
@@ -344,7 +398,7 @@ export default function HomeScreen() {
         </View>
       ) : (
         <View style={styles.productList}>
-          {filteredProducts.map((product) => (
+          {sortedProducts.map((product) => (
             <View key={product.id} style={styles.productCard}>
               <View style={styles.productIcon}>
                 <Text style={styles.productEmoji}>

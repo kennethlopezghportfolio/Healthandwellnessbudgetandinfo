@@ -12,10 +12,11 @@ import {
 } from 'react-native';
 
 import {
+  deleteProduct,
   getProducts,
   initializeDatabase,
   addProduct as saveProductToDatabase,
-  type Product
+  type Product,
 } from './database/database';
 
 type Category =
@@ -153,6 +154,38 @@ export default function HomeScreen() {
       setSaving(false);
     }
   }
+
+  async function handleDeleteProduct(product: Product) {
+  Alert.alert(
+    'Delete Product',
+    `Are you sure you want to delete "${product.name}"?`,
+    [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteProduct(product.id);
+
+            const updatedProducts = await getProducts();
+            setProducts(updatedProducts);
+          } catch (error) {
+            console.error('Error deleting product:', error);
+
+            Alert.alert(
+              'Error',
+              'Could not delete this product. Please try again.'
+            );
+          }
+        },
+      },
+    ]
+  );
+}
 
   if (loading) {
     return (
@@ -353,37 +386,6 @@ export default function HomeScreen() {
         YOUR ROUTINE. YOUR RESEARCH. YOUR BUDGET.
       </Text>
     </ScrollView>
-  );
-}
-
-
-async function handleDeleteProduct(product: Product) {
-  Alert.alert(
-    'Delete Product',
-    `Are you sure you want to delete "${product.name}"?`,
-    [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteProduct(product.id);
-            const updatedProducts = await getProducts();
-            setProducts(updatedProducts);
-          } catch (error) {
-            console.error('Error deleting product:', error);
-            Alert.alert(
-              'Error',
-              'Could not delete this product. Please try again.'
-            );
-          }
-        },
-      },
-    ]
   );
 }
 
